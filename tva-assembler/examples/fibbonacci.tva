@@ -1,0 +1,21 @@
+; computes the fibbonacci sequence and resets on overflow
+x = 128
+y = 129
+z = 130
+
+setup:
+    LDV 1
+    STA x 
+    STA y
+
+loop:
+    LDA y
+    OUT
+    ADD x
+    JMC setup
+    STA z
+    LDA y
+    STA x
+    LDA z
+    STA y
+    JMP loop
