@@ -1,0 +1,23 @@
+    LDV 15  ; turn on the LCD display
+    DSP
+    LDV 200
+    STA 128
+    LDV 229
+
+hello:
+    LDV 1   ; clear the display
+    DSP
+    LDV 200 ; H
+    DSP
+    LDV 229 ; e
+    DSP
+    LDV 236 ; l
+    DSP
+    LDV 236 ; l
+    DSP
+    LDV 239 ; o
+    DSP
+    NOP
+    NOP
+    NOP
+    JMP hello

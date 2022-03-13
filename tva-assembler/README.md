@@ -20,12 +20,12 @@ and you're good to go
 
 # Usage
 I mean it's not that complicated.
-> tva source-file.tva
+> tva compile source-file.tva
 
 and a raw binary file will be spat out
 
 you can use the **-o** flag to set the output destination
-> tva source-file.tva -o ./path/to/out.bin
+> tva compile source-file.tva -o ./path/to/out.bin
 
 and use the **-c** flag to get a C array instead of raw binary
-> tva source-file.tva -o ./path/to/out.bin -c
+> tva compile source-file.tva -o ./path/to/out.bin -c

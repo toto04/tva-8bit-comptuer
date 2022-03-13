@@ -3,7 +3,7 @@ import { createInterface } from 'readline'
 
 import chalk from 'chalk'
 
-import { commandList } from './commands.js'
+import { instructionList } from './instructions.js'
 
 let lineCount = 0
 
@@ -32,36 +32,36 @@ function parseLine(line: string) {
         return
     }
 
-    let command = line.match(/^[ \t]+([A-Z]+)[ \t]*(?:([a-zA-Z_]+)|(\d+))?[ \t]*(?:;.*)?$/)
-    if (command) {
-        if (!commandList.has(command[1])) exitWithErrorOnLine(line, lineCount, 'invalid command')
-        let cmd = commandList.get(command[1])!
+    let instruction = line.match(/^[ \t]+([A-Z]+)[ \t]*(?:([a-zA-Z_]+)|(\d+))?[ \t]*(?:;.*)?$/)
+    if (instruction) {
+        if (!instructionList.has(instruction[1])) exitWithErrorOnLine(line, lineCount, 'invalid command')
+        let cmd = instructionList.get(instruction[1])!
 
-        let value = command[3] ? parseInt(command[3]) : undefined
+        let value = instruction[3] ? parseInt(instruction[3]) : undefined
         if (value && (value < -128 || value > 255))
             exitWithErrorOnLine(line, lineCount, 'bruh, you just have 8 bits ಠ_ಠ')
 
         let parameter: number | undefined
-        let isJmp = /JMP|JMZ|JMC|JNZ|JNC/.test(command[1])
-        if (isJmp && labels.has(command[2])) {
-            parameter = labels.get(command[2])
+        let isJmp = /JMP|JMZ|JMC|JNZ|JNC/.test(instruction[1])
+        if (isJmp && labels.has(instruction[2])) {
+            parameter = labels.get(instruction[2])
         } else {
-            if (command[2]) {
-                if (!variables.has(command[2]))
+            if (instruction[2]) {
+                if (!variables.has(instruction[2]))
                     exitWithErrorOnLine(line, lineCount, 'no such variable' + (isJmp ? ' or label' : ''))
-                parameter = variables.get(command[2])
+                parameter = variables.get(instruction[2])
             } else parameter = value
         }
 
         if (!cmd.requiresParameter && parameter !== undefined)
-            exitWithErrorOnLine(line, lineCount, `command ${command[1]} doesn't require a parameter`)
+            exitWithErrorOnLine(line, lineCount, `command ${instruction[1]} doesn't require a parameter`)
 
         binary.writeInt8(cmd.bytecode >= 128 ? cmd.bytecode - 256 : cmd.bytecode, currentByte)
         currentByte++
 
         if (cmd.requiresParameter) {
             if (parameter === undefined)
-                exitWithErrorOnLine(line, lineCount, 'missing parameter for command ' + command[1])
+                exitWithErrorOnLine(line, lineCount, 'missing parameter for command ' + instruction[1])
             if (parameter! >= 128) { parameter! -= 256 }
             binary.writeInt8(parameter!, currentByte)
             currentByte++

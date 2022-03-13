@@ -1,20 +1,6 @@
 import fs from 'fs'
 
-const NOP = 0b0000
-const LDA = 0b0001
-const ADD = 0b0010
-const SUB = 0b0011
-const STA = 0b0100
-const LDV = 0b0101
-const SDV = 0b0110
-const SBV = 0b0111
-const JMP = 0b1000
-const JMZ = 0b1001
-const JMC = 0b1010
-const JNZ = 0b1011
-const JNC = 0b1100
-const OUT = 0b1110
-const HLT = 0b1111
+import { instructionList } from './instructions.js'
 
 const adr_in = 1 << 0
 const m_in = 1 << 1
@@ -25,13 +11,14 @@ const out = 1 << 4
 const pc_in = 1 << 5
 const pc_out = 1 << 6
 const pc_en = 1 << 7
-const hlt = 1 << 8
+const dsp = 1 << 8
 const a_in = 1 << 9
 const a_out = 1 << 10
 const b_in = 1 << 11
 const f_in = 1 << 12
 const sub = 1 << 13
 const sum_out = 1 << 14
+const hlt = 1 << 15
 
 const steps: [number, number, number, number][] = [
     [0, 0, 0, 0],
@@ -47,13 +34,19 @@ const steps: [number, number, number, number][] = [
     [adr_in + pc_out, m_out + pc_in, 0, 0],
     [adr_in + pc_out, m_out + pc_in, 0, 0],
     [adr_in + pc_out, m_out + pc_in, 0, 0],
-    [0, 0, 0, 0],
+    [a_out + dsp, 0, 0, 0],
     [a_out + out, 0, 0, 0],
     [hlt, hlt, hlt, hlt]
 ]
 
 export function generateMicrocode() {
     let content: Buffer = Buffer.alloc(2048)
+
+    const JMC = instructionList.get('JMC')?.bytecode
+    const JMZ = instructionList.get('JMZ')?.bytecode
+    const JNC = instructionList.get('JNC')?.bytecode
+    const JNZ = instructionList.get('JNZ')?.bytecode
+
     for (let index = 0; index < 2048; index++) {
         // 0 zc b sss iiii 
         const inst = (index & 0b1111) >> 0
@@ -85,13 +78,4 @@ export function generateMicrocode() {
     }
 
     return content
-
-    // for (let i = 0; i < 2024; i += 16) {
-    //     let s = ''
-    //     for (let j = 0; j < 16; j++) {
-    //         s += content[i + j].toString(16) + ' '
-    //         if (j == 7) s += ' '
-    //     }
-    //     console.log(i.toString(16).padStart(3, '0') + ':  ' + s)
-    // }
 }

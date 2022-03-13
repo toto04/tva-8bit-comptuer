@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-#include "./code.c"
 #define OUTPUT_ENABLE 2
 #define WRITE_ENABLE 3
 
@@ -47,28 +46,6 @@ void writeEEPROM(uint16_t address, uint8_t data) {
     delay(1);
 }
 
-bool printContent() {
-    bool error = false;
-    for (uint16_t base = 0; base < sizeof(code); base += 16) {
-        byte data[16];
-        for (uint16_t offset = 0; offset < 16; offset++) {
-            data[offset] = readEEPROM(base + offset);
-            if (data[offset] != code[base + offset]) {
-                Serial.print('*');
-                error = true;
-            }
-        }
-
-        char buf[80];
-        sprintf(buf, "%03x:  %02x %02x %02x %02x %02x %02x %02x %02x   %02x %02x %02x %02x %02x %02x %02x %02x",
-                base, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
-                data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
-
-        Serial.println(buf);
-    }
-    return !error;
-}
-
 void setup() {
     // set all address pin to OUTPUT
     for (uint8_t i = 0; i < 11; i++) {
@@ -77,20 +54,39 @@ void setup() {
     pinMode(OUTPUT_ENABLE, OUTPUT);
     pinMode(WRITE_ENABLE, OUTPUT);
     digitalWrite(WRITE_ENABLE, HIGH);
-    Serial.begin(9600);
 
-    for (uint16_t i = 0; i < sizeof(code); i++) {
-        writeEEPROM(i, code[i]);
-    }
-
-    Serial.println("Done! printing contents:");
-    if (printContent())
-        Serial.println("All good! <3");
-    else
-        Serial.println("--------------\nGASP!!! Error detected!!! :(\n--------------");
+    Serial.begin(115200);
 }
 
+uint8_t lngth[2];
+uint8_t code[2048];
+uint16_t length = 0;
+
 void loop() {
-    // put your main code here, to run repeatedly:
-    delay(60000);
+    if (Serial.available() > 0) {
+        switch (Serial.read()) {
+            case 0x01:  // connection requested, next two bytes will be lenght, then
+                Serial.write(0x01);
+                Serial.readBytes(lngth, 2);
+                length = (lngth[0] << 8) + lngth[1];
+                Serial.write(lngth, 2);
+                uint16_t remainingLength = length;
+                while (remainingLength >= 32) {
+                    Serial.readBytes(code + (length - remainingLength), 32);
+                    remainingLength -= 32;
+                }
+                if (remainingLength)
+                    Serial.readBytes(code + (length - remainingLength), remainingLength);
+
+                for (uint16_t i = 0; i < length; i++) {
+                    writeEEPROM(i, code[i]);
+                }
+                for (uint16_t i = 0; i < length; i++) {
+                    Serial.write(readEEPROM(i));
+                }
+                break;
+
+                // other cases, other commands
+        }
+    }
 }

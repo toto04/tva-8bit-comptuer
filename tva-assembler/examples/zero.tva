@@ -1,0 +1,17 @@
+x = 128
+
+:start
+    LDV 123
+    OUT     ; out 123 to see if initialized
+    LDV 0
+    STA x
+    OUT
+
+:loop
+    SBV 5
+    JMZ start
+    LDA x
+    ADV 1
+    STA x
+    OUT
+    JMP loop

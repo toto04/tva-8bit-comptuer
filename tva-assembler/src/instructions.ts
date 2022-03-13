@@ -1,9 +1,9 @@
-type Command = {
+type Instruction = {
     bytecode: number,
     requiresParameter: boolean
 }
 
-export let commandList = new Map<string, Command>([
+export let instructionList = new Map<string, Instruction>([
     ['NOP', { bytecode: 0b0000, requiresParameter: false }],
     ['LDA', { bytecode: 0b0001, requiresParameter: true }],
     ['ADD', { bytecode: 0b0010, requiresParameter: true }],
@@ -17,6 +17,7 @@ export let commandList = new Map<string, Command>([
     ['JMC', { bytecode: 0b1010, requiresParameter: true }],
     ['JNZ', { bytecode: 0b1011, requiresParameter: true }],
     ['JNC', { bytecode: 0b1100, requiresParameter: true }],
+    ['DSP', { bytecode: 0b1101, requiresParameter: false }],
     ['OUT', { bytecode: 0b1110, requiresParameter: false }],
     ['HLT', { bytecode: 0b1111, requiresParameter: false }],
 ])

@@ -1,5 +1,6 @@
 build
 *.DS_Store
+*.bin
 
 # PlatformIO
 eeprom-programmer/.pio
